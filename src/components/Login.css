@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #fff;
+  padding-top: 60px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 360px;
+  padding: 40px;
+  border: 2px solid #1e3a8a;
+}
+
+.slughub-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 48px;
+  color: #1e3a8a;
+  letter-spacing: 2px;
+}
+
+.login-title {
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  color: #111;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.login-field input {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #d1d5db;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-field input:focus {
+  border-color: #6366f1;
+}
+
+.login-btn {
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #1e3a8a;
+  border: none;
+  cursor: pointer;
+}
+
+.login-btn:hover {
+  background: #172554;
+}
