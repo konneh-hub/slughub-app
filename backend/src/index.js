@@ -26,10 +26,19 @@ app.use(errorHandler);
 const port = config.port;
 
 async function main() {
-  app.listen(port, () => console.log(`Server started on port ${port}`));
+  const server = app.listen(port, () => console.log(`Server started on port ${port}`));
+  server.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use. Please free the port or set PORT to a different value.`);
+      process.exit(1);
+    }
+    console.error('Server error', err);
+    process.exit(1);
+  });
 }
 
 main().catch((e) => {
   console.error(e);
   prisma.$disconnect();
+  process.exit(1);
 });
