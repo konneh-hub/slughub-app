@@ -1,35 +1,43 @@
 const authService = require('../services/authService');
-const auditService = require('../services/auditService');
 
 async function register(req, res) {
   try {
     const { email, password, firstName, lastName } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
     const user = await authService.register({ email, password, firstName, lastName });
-    res.status(201).json({ id: user.id, email: user.email });
+    return res.status(201).json({ id: user.id, email: user.email });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 }
 
 async function login(req, res) {
   const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
   const ip = req.ip;
   const r = await authService.login({ email, password, ip });
   if (r.error) return res.status(400).json({ error: r.error });
-  res.json({ user: { id: r.user.id, email: r.user.email }, accessToken: r.accessToken, refreshToken: r.refreshToken });
+  return res.json({ user: { id: r.user.id, email: r.user.email }, accessToken: r.accessToken, refreshToken: r.refreshToken });
 }
 
 async function refresh(req, res) {
   const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).json({ error: 'Refresh token is required' });
   const r = await authService.refreshToken(refreshToken);
   if (r.error) return res.status(400).json({ error: r.error });
-  res.json({ accessToken: r.accessToken });
+  return res.json({ accessToken: r.accessToken });
 }
 
 async function logout(req, res) {
   const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).json({ error: 'Refresh token is required' });
   await authService.logout(refreshToken, req.ip);
-  res.json({ ok: true });
+  return res.json({ ok: true });
 }
 
-module.exports = { register, login, refresh, logout };
+async function me(req, res) {
+  const user = req.user;
+  return res.json(user);
+}
+
+module.exports = { register, login, refresh, logout, me };

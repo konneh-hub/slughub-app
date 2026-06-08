@@ -1,12 +1,43 @@
 import { useState } from 'react'
 import './Login.css'
 
+const apiBase = import.meta.env.VITE_API_BASE || '/api'
+
 function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: username, password }),
+      })
+
+      if (!response.ok) {
+        const body = await response.json()
+        throw new Error(body.error || 'Login failed')
+      }
+
+      const responseBody = await response.json()
+      localStorage.setItem('slughub_access_token', responseBody.accessToken)
+      localStorage.setItem('slughub_refresh_token', responseBody.refreshToken)
+      setUsername('')
+      setPassword('')
+      setError(null)
+      window.location.reload()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -34,7 +65,10 @@ function Login() {
             placeholder="Enter your password"
           />
         </div>
-        <button type="submit" className="login-btn">Sign In</button>
+        {error && <div className="login-error">{error}</div>}
+        <button type="submit" className="login-btn" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
       </form>
     </div>
   )

@@ -5,6 +5,8 @@ const config = require('../config');
 const auditService = require('./auditService');
 
 async function register({ email, password, firstName, lastName }) {
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new Error('Email already registered');
   const hashed = await hashPassword(password);
   const user = await prisma.user.create({ data: { email, password: hashed, firstName, lastName } });
   await auditService.log({ userId: user.id, action: 'user.register' });

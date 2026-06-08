@@ -7,7 +7,8 @@ const authorizeRole = require('../middleware/authorizeRole');
 // Protect all user routes
 router.use(authenticateJWT);
 
-// only admins or exam officers can list users (example)
+router.get('/me', userController.getCurrentUser);
+router.post('/', authorizeRole('University Admin'), userController.createUser);
 router.get('/', authorizeRole(['University Admin', 'Exam Officer']), userController.listUsers);
 router.get('/:id', authorizeRole(['University Admin', 'Dean', 'HOD', 'Exam Officer', 'Lecturer', 'Student']), userController.getUser);
 router.put('/:id', authorizeRole(['University Admin', 'Dean', 'HOD', 'Exam Officer']), userController.updateUser);

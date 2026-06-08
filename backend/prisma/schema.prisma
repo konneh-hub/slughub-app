@@ -8,19 +8,25 @@ datasource db {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
-  email               String    @unique
+  id                  Int                  @id @default(autoincrement())
+  email               String               @unique
   password            String
   firstName           String?
   lastName            String?
-  isActive            Boolean   @default(true)
-  failedLoginAttempts Int       @default(0)
+  isActive            Boolean              @default(true)
+  failedLoginAttempts Int                  @default(0)
   lockedUntil         DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   roles               UserRole[]
   refreshTokens       RefreshToken[]
   auditLogs           AuditLog[]
+  student             Student?
+  lecturer            Lecturer?
+  notifications       Notification[]
+  resultApprovals     ResultApproval[]    @relation("ResultApprovalApprovedBy")
+  resultCorrections   ResultCorrection[]  @relation("ResultCorrectionCorrectedBy")
+  transcriptRequests  TranscriptRequest[]
 }
 
 model Role {
@@ -78,4 +84,325 @@ model AuditLog {
   ip        String?
   meta      Json?
   createdAt DateTime @default(now())
+}
+
+model Faculty {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  departments Department[]
+  deans       Dean[]
+  examOfficers ExamOfficer[]
+}
+
+model Department {
+  id          Int        @id @default(autoincrement())
+  name        String
+  code        String     @unique
+  faculty     Faculty    @relation(fields: [facultyId], references: [id])
+  facultyId   Int
+  programmes  Programme[]
+  lecturers   Lecturer[]
+  courses     Course[]
+  hods        Hod[]
+  students    Student[]
+}
+
+model Programme {
+  id             Int            @id @default(autoincrement())
+  name           String
+  code           String         @unique
+  department     Department     @relation(fields: [departmentId], references: [id])
+  departmentId   Int
+  academicLevel  AcademicLevel  @relation(fields: [academicLevelId], references: [id])
+  academicLevelId Int
+  courses        Course[]
+  students       Student[]
+}
+
+model AcademicLevel {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  sequence   Int
+  programmes Programme[]
+  students   Student[]
+  courses    Course[]
+}
+
+model AcademicSession {
+  id              Int                @id @default(autoincrement())
+  name            String             @unique
+  startDate       DateTime
+  endDate         DateTime
+  isCurrent       Boolean            @default(false)
+  allocations     CourseAllocation[]
+  registrations   CourseRegistration[]
+  resultHeaders   ResultHeader[]
+  gpaRecords      GpaRecord[]
+  cgpaRecords     CgpaRecord[]
+  transcriptRequests TranscriptRequest[]
+}
+
+model Semester {
+  id            Int                @id @default(autoincrement())
+  name          String             @unique
+  sequence      Int
+  startDate     DateTime
+  endDate       DateTime
+  courses       Course[]
+  allocations   CourseAllocation[]
+  registrations CourseRegistration[]
+  resultHeaders ResultHeader[]
+  gpaRecords    GpaRecord[]
+}
+
+model Student {
+  id             Int           @id @default(autoincrement())
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int           @unique
+  matricNumber   String        @unique
+  department     Department    @relation(fields: [departmentId], references: [id])
+  departmentId   Int
+  programme      Programme     @relation(fields: [programmeId], references: [id])
+  programmeId    Int
+  academicLevel  AcademicLevel @relation(fields: [academicLevelId], references: [id])
+  academicLevelId Int
+  admissionYear  Int
+  status         String
+  courseRegistrations CourseRegistration[]
+  resultHeaders  ResultHeader[]
+  gpaRecords     GpaRecord[]
+  cgpaRecords    CgpaRecord[]
+  transcriptRequests TranscriptRequest[]
+}
+
+model Lecturer {
+  id            Int        @id @default(autoincrement())
+  user          User       @relation(fields: [userId], references: [id])
+  userId        Int        @unique
+  staffNumber   String     @unique
+  department    Department @relation(fields: [departmentId], references: [id])
+  departmentId  Int
+  title         String
+  allocations   CourseAllocation[]
+  hod           Hod?
+  dean          Dean?
+  examOfficer   ExamOfficer?
+}
+
+model Hod {
+  id           Int        @id @default(autoincrement())
+  lecturer     Lecturer   @relation(fields: [lecturerId], references: [id])
+  lecturerId   Int        @unique
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
+}
+
+model Dean {
+  id           Int      @id @default(autoincrement())
+  lecturer     Lecturer @relation(fields: [lecturerId], references: [id])
+  lecturerId   Int      @unique
+  faculty      Faculty  @relation(fields: [facultyId], references: [id])
+  facultyId    Int
+}
+
+model ExamOfficer {
+  id           Int      @id @default(autoincrement())
+  lecturer     Lecturer @relation(fields: [lecturerId], references: [id])
+  lecturerId   Int      @unique
+  faculty      Faculty  @relation(fields: [facultyId], references: [id])
+  facultyId    Int
+}
+
+model Course {
+  id             Int                @id @default(autoincrement())
+  code           String             @unique
+  title          String
+  description    String?
+  creditUnits    Int
+  department     Department         @relation(fields: [departmentId], references: [id])
+  departmentId   Int
+  programme      Programme          @relation(fields: [programmeId], references: [id])
+  programmeId    Int
+  academicLevel  AcademicLevel      @relation(fields: [academicLevelId], references: [id])
+  academicLevelId Int
+  semester       Semester           @relation(fields: [semesterId], references: [id])
+  semesterId     Int
+  prerequisites  CoursePrerequisite[] @relation("CoursePrerequisiteCourse")
+  prerequisiteFor CoursePrerequisite[] @relation("CoursePrerequisitePrerequisite")
+  allocations    CourseAllocation[]
+  registrations  CourseRegistration[]
+}
+
+model CoursePrerequisite {
+  id             Int    @id @default(autoincrement())
+  course         Course @relation("CoursePrerequisiteCourse", fields: [courseId], references: [id])
+  courseId       Int
+  prerequisite   Course @relation("CoursePrerequisitePrerequisite", fields: [prerequisiteId], references: [id])
+  prerequisiteId Int
+  @@unique([courseId, prerequisiteId])
+}
+
+model CourseAllocation {
+  id               Int              @id @default(autoincrement())
+  course           Course           @relation(fields: [courseId], references: [id])
+  courseId         Int
+  lecturer         Lecturer         @relation(fields: [lecturerId], references: [id])
+  lecturerId       Int
+  academicSession  AcademicSession  @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  semester         Semester         @relation(fields: [semesterId], references: [id])
+  semesterId       Int
+  resultHeaders    ResultHeader[]
+
+  @@unique([courseId, lecturerId, academicSessionId, semesterId])
+}
+
+model CourseRegistration {
+  id               Int              @id @default(autoincrement())
+  student          Student          @relation(fields: [studentId], references: [id])
+  studentId        Int
+  course           Course           @relation(fields: [courseId], references: [id])
+  courseId         Int
+  academicSession  AcademicSession  @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  semester         Semester         @relation(fields: [semesterId], references: [id])
+  semesterId       Int
+  status           String
+  registeredAt     DateTime         @default(now())
+  @@unique([studentId, courseId, academicSessionId, semesterId])
+}
+
+model GradingSystem {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  description   String?
+  gradingScales GradingScale[]
+}
+
+model GradingScale {
+  id              Int            @id @default(autoincrement())
+  gradingSystem   GradingSystem  @relation(fields: [gradingSystemId], references: [id])
+  gradingSystemId Int
+  grade           String
+  minScore        Int
+  maxScore        Int
+  gradePoint      Float
+  @@unique([gradingSystemId, grade])
+}
+
+model ResultHeader {
+  id               Int               @id @default(autoincrement())
+  student          Student           @relation(fields: [studentId], references: [id])
+  studentId        Int
+  courseAllocation CourseAllocation   @relation(fields: [courseAllocationId], references: [id])
+  courseAllocationId Int
+  academicSession  AcademicSession   @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  semester         Semester          @relation(fields: [semesterId], references: [id])
+  semesterId       Int
+  totalScore       Float
+  grade            String
+  gradePoint       Float
+  remark           String
+  results          Result[]
+  approvals        ResultApproval[]
+  corrections      ResultCorrection[]
+
+  @@unique([studentId, courseAllocationId, academicSessionId, semesterId])
+}
+
+model Result {
+  id             Int          @id @default(autoincrement())
+  resultHeader   ResultHeader @relation(fields: [resultHeaderId], references: [id])
+  resultHeaderId Int
+  componentName  String
+  score          Float
+  maxScore       Float
+}
+
+model ResultApproval {
+  id             Int       @id @default(autoincrement())
+  resultHeader   ResultHeader @relation(fields: [resultHeaderId], references: [id])
+  resultHeaderId Int
+  approvedBy     User      @relation("ResultApprovalApprovedBy", fields: [approvedById], references: [id])
+  approvedById   Int
+  approvedAt     DateTime  @default(now())
+  status         String
+  comment        String?
+}
+
+model ResultCorrection {
+  id             Int       @id @default(autoincrement())
+  resultHeader   ResultHeader @relation(fields: [resultHeaderId], references: [id])
+  resultHeaderId Int
+  correctedBy    User      @relation("ResultCorrectionCorrectedBy", fields: [correctedById], references: [id])
+  correctedById  Int
+  correctionType String
+  oldScore       Float
+  newScore       Float
+  comment        String?
+  createdAt      DateTime  @default(now())
+}
+
+model GpaRecord {
+  id               Int              @id @default(autoincrement())
+  student          Student          @relation(fields: [studentId], references: [id])
+  studentId        Int
+  academicSession  AcademicSession  @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  semester         Semester         @relation(fields: [semesterId], references: [id])
+  semesterId       Int
+  gpa              Float
+}
+
+model CgpaRecord {
+  id               Int             @id @default(autoincrement())
+  student          Student         @relation(fields: [studentId], references: [id])
+  studentId        Int
+  academicSession  AcademicSession @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  cgpa             Float
+}
+
+model TranscriptRequest {
+  id              Int              @id @default(autoincrement())
+  student         Student          @relation(fields: [studentId], references: [id])
+  studentId       Int
+  academicSession AcademicSession  @relation(fields: [academicSessionId], references: [id])
+  academicSessionId Int
+  requestedAt     DateTime         @default(now())
+  status          String
+  processedAt     DateTime?
+  processedBy     User?            @relation(fields: [processedById], references: [id])
+  processedById   Int?
+  transcript      Transcript?
+}
+
+model Transcript {
+  id                 Int               @id @default(autoincrement())
+  transcriptRequest  TranscriptRequest @relation(fields: [transcriptRequestId], references: [id])
+  transcriptRequestId Int
+  issuedAt           DateTime          @default(now())
+  content            String
+  status             String
+
+  @@unique([transcriptRequestId])
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     Int?
+  title      String
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model SystemSetting {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique
+  value       String
+  description String?
 }

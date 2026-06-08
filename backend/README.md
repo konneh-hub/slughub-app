@@ -11,17 +11,29 @@ Setup
 5. Seed default roles/permissions: `npm run prisma:seed`.
 6. Start dev server: `npm run dev`.
 
+Configuration
+
+- Copy `.env.example` to `.env` and update secrets and database URL.
+- Set `CORS_ORIGINS` to the frontend origin, for example `http://localhost:5173`.
+
 API endpoints (RBAC/auth)
 
 - POST /auth/register
 - POST /auth/login
 - POST /auth/refresh
 - POST /auth/logout
+- GET /auth/me
 - GET /users
+- POST /users
+- GET /users/me
 - GET /users/:id
 - PUT /users/:id
 - DELETE /users/:id
+- GET /roles
+- GET /roles/:id
 - POST /roles
 - POST /roles/assign
+- GET /permissions
+- GET /permissions/:id
 - POST /permissions
 - POST /permissions/assign-to-role

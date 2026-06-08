@@ -6,6 +6,8 @@ const authorizeRole = require('../middleware/authorizeRole');
 
 router.use(authenticateJWT);
 
+router.get('/', authorizeRole('University Admin'), permissionController.listPermissions);
+router.get('/:id', authorizeRole('University Admin'), permissionController.getPermission);
 router.post('/', authorizeRole('University Admin'), permissionController.createPermission);
 router.post('/assign-to-role', authorizeRole('University Admin'), permissionController.assignPermissionToRole);
 

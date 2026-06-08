@@ -8,6 +8,26 @@ async function assignPermissionToRole(roleId, permissionId) {
   return prisma.rolePermission.create({ data: { roleId, permissionId } });
 }
 
+async function listRoles() {
+  return prisma.role.findMany({ include: { permissions: { include: { permission: true } } } });
+}
+
+async function getRoleById(id) {
+  return prisma.role.findUnique({ where: { id }, include: { permissions: { include: { permission: true } } } });
+}
+
+async function listPermissions() {
+  return prisma.permission.findMany({ include: { roles: { include: { role: true } } } });
+}
+
+async function getPermissionById(id) {
+  return prisma.permission.findUnique({ where: { id }, include: { roles: { include: { role: true } } } });
+}
+
+async function getUserRoles(userId) {
+  return prisma.userRole.findMany({ where: { userId }, include: { role: true } });
+}
+
 async function userHasRole(userId, roleName) {
   const ur = await prisma.userRole.findFirst({
     where: { userId, role: { name: roleName } },
@@ -27,4 +47,4 @@ async function userHasPermission(userId, permissionName) {
   return false;
 }
 
-module.exports = { assignRoleToUser, assignPermissionToRole, userHasRole, userHasPermission };
+module.exports = { assignRoleToUser, assignPermissionToRole, listRoles, getRoleById, listPermissions, getPermissionById, getUserRoles, userHasRole, userHasPermission };
