@@ -123,19 +123,132 @@ async function getCurrentUser(req, res) {
       lastName: true,
       isActive: true,
       roles: {
-        include: { role: { select: { id: true, name: true, description: true } } }
+        include: { role: { select: { id: true, name: true, description: true, permissions: { include: { permission: true } } } } }
       }
     }
   });
   if (!user) return res.status(404).json({ error: 'User not found' });
+  const roles = user.roles.map((ur) => ({
+    ...ur.role,
+    permissions: ur.role.permissions.map((rp) => rp.permission)
+  }));
   return res.json({
     id: user.id,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
     isActive: user.isActive,
-    roles: user.roles.map((ur) => ur.role)
+    roles
   });
 }
 
-module.exports = { listUsers, getUser, createUser, updateUser, deleteUser, getCurrentUser };
+function buildResponsibilities(roleNames) {
+  const responsibilitiesMap = {
+    'University Admin': [
+      'Manage all users and system roles',
+      'Assign roles and permissions',
+      'Configure faculties, departments, programmes, and courses',
+      'Manage academic sessions, semesters, and levels',
+      'View and audit all activity logs',
+      'Oversee result workflows, transcripts, and student records'
+    ],
+    'Exam Officer': [
+      'Review and approve uploaded course results',
+      'Reject incorrect or incomplete results',
+      'Publish results to students',
+      'Manage exam-related approvals and reports',
+      'Access student result records across departments'
+    ],
+    'Dean': [
+      'Oversee faculty-level academic operations',
+      'Review departmental results and performance',
+      'Support HODs in course and student management',
+      'Approve faculty-level reports and academic decisions',
+      'Monitor faculty lecturers and students'
+    ],
+    'HOD': [
+      'Manage department courses and lecturers',
+      'Assign lecturers to department courses',
+      'Oversee departmental student progress',
+      'Review departmental results before approval',
+      'Coordinate with faculty and exam office on academic matters'
+    ],
+    'Lecturer': [
+      'Access assigned courses and student lists',
+      'Upload CA and exam scores for registered students',
+      'Update submitted results before final approval',
+      'View course allocations and academic sessions',
+      'Support student academic inquiries for assigned courses'
+    ],
+    'Student': [
+      'View personal course results and grades',
+      'Check GPA and transcript history',
+      'Access current academic registration details',
+      'Download unofficial result slips',
+      'Track academic standing and progression'
+    ]
+  };
+
+  const responsibilities = new Set();
+  for (const roleName of roleNames) {
+    const items = responsibilitiesMap[roleName] || [];
+    items.forEach((item) => responsibilities.add(item));
+  }
+  return Array.from(responsibilities);
+}
+
+async function getUserResponsibilities(req, res) {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid user id' });
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      roles: {
+        include: { role: { select: { id: true, name: true, description: true } } }
+      }
+    }
+  });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const roles = user.roles.map((ur) => ur.role);
+  return res.json({
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    roles,
+    responsibilities: buildResponsibilities(roles.map((role) => role.name))
+  });
+}
+
+async function getCurrentUserResponsibilities(req, res) {
+  const id = req.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      roles: {
+        include: { role: { select: { id: true, name: true, description: true } } }
+      }
+    }
+  });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const roles = user.roles.map((ur) => ur.role);
+  return res.json({
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    roles,
+    responsibilities: buildResponsibilities(roles.map((role) => role.name))
+  });
+}
+
+module.exports = { listUsers, getUser, createUser, updateUser, deleteUser, getCurrentUser, getUserResponsibilities, getCurrentUserResponsibilities };
