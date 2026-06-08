@@ -193,6 +193,7 @@ async function createAcademicLevel(req, res) {
 module.exports = {
   listAcademicSessions,
   getAcademicSession,
+  getCurrentAcademicSession,
   createAcademicSession,
   updateAcademicSession,
   setCurrentSession,

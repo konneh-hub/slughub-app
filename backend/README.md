@@ -37,3 +37,31 @@ API endpoints (RBAC/auth)
 - GET /permissions/:id
 - POST /permissions
 - POST /permissions/assign-to-role
+
+Course registration endpoints
+- POST /course-registrations/student/:id
+- DELETE /course-registrations/student/:id/:registrationId
+- GET /course-registrations/student/:id
+- GET /course-registrations/course/:id
+
+Academic and resource endpoints
+- GET /academic/sessions
+- GET /academic/sessions/:id
+- GET /academic/sessions/current
+- POST /academic/sessions
+- PUT /academic/sessions/:id
+- POST /academic/sessions/:id/set-current
+- DELETE /academic/sessions/:id
+- GET /academic/semesters
+- POST /academic/semesters
+- GET /academic/levels
+- POST /academic/levels
+- GET /faculties
+- GET /departments
+- GET /programmes
+- GET /courses
+- GET /students
+- GET /lecturers
+- GET /results
+- GET /transcripts
+- GET /audit-logs
