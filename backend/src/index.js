@@ -15,6 +15,9 @@ const studentRoutes = require('./routes/students');
 const lecturerRoutes = require('./routes/lecturers');
 const resultRoutes = require('./routes/results');
 const academicRoutes = require('./routes/academic');
+const transcriptRoutes = require('./routes/transcripts');
+const auditLogRoutes = require('./routes/auditLogs');
+const resultCorrectionRoutes = require('./routes/resultCorrections');
 const errorHandler = require('./middleware/errorHandler');
 const prisma = require('./prismaClient');
 
@@ -54,6 +57,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/lecturers', lecturerRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/results', resultCorrectionRoutes);
+app.use('/api/transcripts', transcriptRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/academic', academicRoutes);
 
 app.use(errorHandler);

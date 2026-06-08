@@ -9,6 +9,7 @@ router.use(authenticateJWT);
 // Academic Session routes
 router.get('/sessions', authorizeRole(['University Admin', 'Dean', 'HOD', 'Exam Officer', 'Lecturer']), academicController.listAcademicSessions);
 router.get('/sessions/:id', authorizeRole(['University Admin', 'Dean', 'HOD', 'Exam Officer', 'Lecturer']), academicController.getAcademicSession);
+router.get('/sessions/current', authorizeRole(['University Admin', 'Dean', 'HOD', 'Exam Officer', 'Lecturer', 'Student']), academicController.getCurrentAcademicSession);
 router.post('/sessions', authorizeRole('University Admin'), academicController.createAcademicSession);
 router.put('/sessions/:id', authorizeRole('University Admin'), academicController.updateAcademicSession);
 router.post('/sessions/:id/set-current', authorizeRole('University Admin'), academicController.setCurrentSession);

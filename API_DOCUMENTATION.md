@@ -24,14 +24,18 @@ The backend implements comprehensive RBAC with 6 roles:
 ### User Management (`/api/users`)
 - `GET /users` - List all users (Admin, Exam Officer)
 - `GET /users/me` - Get current user profile
+- `GET /users/me/responsibilities` - Get current user role responsibilities
 - `GET /users/:id` - Get specific user (all authenticated users)
+- `GET /users/:id/responsibilities` - Get specific user's role responsibilities
 - `POST /users` - Create new user (Admin only)
 - `PUT /users/:id` - Update user (Admin, Dean, HOD, Exam Officer)
 - `DELETE /users/:id` - Deactivate user (Admin only)
 
 ### Role Management (`/api/roles`)
 - `GET /roles` - List all roles (Admin)
+- `GET /roles/responsibilities` - List all role responsibilities (Admin)
 - `GET /roles/:id` - Get specific role (Admin)
+- `GET /roles/:id/responsibilities` - Get responsibilities for specific role (Admin)
 - `POST /roles` - Create new role (Admin)
 - `POST /roles/assign` - Assign role to user (Admin)
 

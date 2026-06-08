@@ -66,6 +66,17 @@ async function refreshToken(rawToken) {
   return { accessToken };
 }
 
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return { error: 'User not found' };
+  const isMatch = await comparePassword(currentPassword, user.password);
+  if (!isMatch) return { error: 'Current password is incorrect' };
+  const hashed = await hashPassword(newPassword);
+  await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+  await auditService.log({ userId, action: 'user.password_change' });
+  return { ok: true };
+}
+
 async function logout(rawToken, ip) {
   const tokenHash = hashToken(rawToken);
   const tokenEntry = await prisma.refreshToken.findUnique({ where: { tokenHash } });

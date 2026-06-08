@@ -28,6 +28,18 @@ async function refresh(req, res) {
   return res.json({ accessToken: r.accessToken });
 }
 
+async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    const r = await authService.changePassword(req.user.id, currentPassword, newPassword);
+    if (r.error) return res.status(400).json({ error: r.error });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
 async function logout(req, res) {
   const { refreshToken } = req.body;
   if (!refreshToken) return res.status(400).json({ error: 'Refresh token is required' });
@@ -40,4 +52,4 @@ async function me(req, res) {
   return res.json(user);
 }
 
-module.exports = { register, login, refresh, logout, me };
+module.exports = { register, login, refresh, logout, changePassword, me };

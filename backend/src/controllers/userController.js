@@ -138,7 +138,8 @@ async function getCurrentUser(req, res) {
     firstName: user.firstName,
     lastName: user.lastName,
     isActive: user.isActive,
-    roles
+    roles,
+    responsibilities: buildResponsibilities(roles.map((role) => role.name))
   });
 }
 

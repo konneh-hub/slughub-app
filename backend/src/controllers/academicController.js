@@ -36,6 +36,22 @@ async function getAcademicSession(req, res) {
   }
 }
 
+async function getCurrentAcademicSession(req, res) {
+  try {
+    const session = await prisma.academicSession.findFirst({
+      where: { isCurrent: true },
+      include: {
+        allocations: { select: { id: true, course: { select: { code: true, title: true } } } },
+        registrations: { select: { id: true } }
+      }
+    });
+    if (!session) return res.status(404).json({ error: 'Current academic session not found' });
+    return res.json(session);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
 async function createAcademicSession(req, res) {
   try {
     const { name, startDate, endDate } = req.body;
